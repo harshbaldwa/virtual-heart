@@ -1,0 +1,16 @@
+{
+    "0D models": [
+        {
+            "name": "Beeler-Reuter 0D",
+            "value": "br0d",
+            "selected": false
+        }
+    ],
+    "1D models": [
+        {
+            "name": "Beeler-Reuter 1D",
+            "value": "br1d",
+            "selected": false
+        }
+    ]
+}

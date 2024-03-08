@@ -8,6 +8,7 @@ use web_sys::HtmlCanvasElement;
 pub struct BR0D {
     // time array
     t: Vec<f64>,
+    nsteps: usize,
     // voltage arrays
     vsave: Vec<f64>,
     msave: Vec<f64>,
@@ -26,8 +27,7 @@ pub struct BR0D {
 
 #[wasm_bindgen]
 impl BR0D {
-    pub fn new(v: f64, m: f64, h: f64, j: f64, d: f64, f: f64, x1: f64, cai: f64) -> BR0D {
-        let nsteps = 50000;
+    pub fn new(v: f64, m: f64, h: f64, j: f64, d: f64, f: f64, x1: f64, cai: f64, nsteps: usize) -> BR0D {
         let t = (0..nsteps).map(|x| x as f64 * 0.1).collect();
         let mut vsave = vec![0.0; nsteps];
         let mut msave = vec![0.0; nsteps];
@@ -54,6 +54,7 @@ impl BR0D {
 
         BR0D {
             t,
+            nsteps,
             vsave,
             msave,
             hsave,
@@ -73,7 +74,7 @@ impl BR0D {
         self.clear(canvas.clone());
         let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
         let root = backend.into_drawing_area();
-        let (x_min, x_max) = (0.0, 5000.0);
+        let (x_min, x_max) = (0.0, self.nsteps as f64 * 0.1);
         let (y_min, y_max) = (-100.0, 50.0);
         let mut chart = ChartBuilder::on(&root)
             .x_label_area_size(40)
@@ -96,6 +97,130 @@ impl BR0D {
                 &RED,
             ))
             .unwrap();
+    }
+
+    pub fn draw_gates(&self, canvas: HtmlCanvasElement, gates: &str) {
+        self.clear(canvas.clone());
+        let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
+        let root = backend.into_drawing_area();
+        let (x_min, x_max) = (0.0, self.nsteps as f64 * 0.1);
+        let (y_min, y_max) = (0.0, 1.0);
+        let mut chart = ChartBuilder::on(&root)
+            .x_label_area_size(40)
+            .y_label_area_size(40)
+            .margin(20)
+            .caption("BR0D - Gates", ("Arial", 20).into_font())
+            .build_cartesian_2d(x_min..x_max, y_min..y_max)
+            .unwrap();
+
+        chart
+            .configure_mesh()
+            .x_desc("Time (ms)")
+            .draw()
+            .unwrap();
+
+        if gates.contains("m") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.msave.iter()).map(|(x, y)| (*x, *y)),
+                    &RED,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("h") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.hsave.iter()).map(|(x, y)| (*x, *y)),
+                    &GREEN,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("j") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.jsave.iter()).map(|(x, y)| (*x, *y)),
+                    &BLUE,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("d") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.dsave.iter()).map(|(x, y)| (*x, *y)),
+                    &YELLOW,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("f") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.fsave.iter()).map(|(x, y)| (*x, *y)),
+                    &CYAN,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("x1") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.x1save.iter()).map(|(x, y)| (*x, *y)),
+                    &MAGENTA,
+                ))
+                .unwrap();
+        }
+    }
+
+    pub fn draw_current(&self, canvas: HtmlCanvasElement, current: &str) {
+        self.clear(canvas.clone());
+        let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
+        let root = backend.into_drawing_area();
+        let (x_min, x_max) = (0.0, self.nsteps as f64 * 0.1);
+        let (y_min, y_max) = (-5.0, 5.0);
+        let mut chart = ChartBuilder::on(&root)
+            .x_label_area_size(40)
+            .y_label_area_size(40)
+            .margin(20)
+            .caption("BR0D - Currents", ("Arial", 20).into_font())
+            .build_cartesian_2d(x_min..x_max, y_min..y_max)
+            .unwrap();
+
+        chart
+            .configure_mesh()
+            .x_desc("Time (ms)")
+            .y_desc("Current (uA/cm^2)")
+            .draw()
+            .unwrap();
+
+        if current.contains("is") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.issave.iter()).map(|(x, y)| (*x, *y)),
+                    &RED,
+                ))
+                .unwrap();
+        }
+
+        if current.contains("ik1") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.ik1save.iter()).map(|(x, y)| (*x, *y)),
+                    &GREEN,
+                ))
+                .unwrap();
+        }
+
+        if current.contains("ix1") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.t.iter().zip(self.ix1save.iter()).map(|(x, y)| (*x, *y)),
+                    &BLUE,
+                ))
+                .unwrap();
+        }
     }
 
     pub fn calculate(&mut self) {
@@ -150,7 +275,7 @@ impl BR0D {
         let mut dcai: f64;
         let mut dv: f64;
 
-        for i in 1..50000 {
+        for i in 1..self.nsteps {
             c1 = 0.0005;
             c2 = 0.083;
             c3 = 50.0;
