@@ -1,14 +1,11 @@
-use std::vec;
-
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
-use ndarray::{Array2, Array1};
 
 #[wasm_bindgen]
 pub struct BR1D {
-    x: Vec<f32>,
+    x: Vec<f64>,
     // parameters
     gna: f32,
     gnac: f32,
@@ -68,27 +65,6 @@ impl BR1D {
             .collect()
     }
 
-    pub fn matrix_vector(&self, mat: Vec<Vec<f32>>, vec: Vec<f32>) -> Vec<f32> {
-        mat.iter()
-            .map(|row| {
-                row.iter()
-                    .zip(vec.iter())
-                    .map(|(mat, vec)| mat * vec)
-                    .sum()
-            })
-            .collect()
-    }
-
-    pub fn matrix_vector_naive(&self, mat: Vec<Vec<f32>>, vec: Vec<f32>) -> Vec<f32> {
-        let mut result = vec![0.0; mat.len()];
-        for i in 0..mat.len() {
-            for j in 0..mat.len() {
-                result[i] += mat[i][j] * vec[j];
-            }
-        }
-        result
-    }
-
     pub fn matrix_vector_smart(&self, vec: Vec<f32>, nx: usize, boundary: usize) -> Vec<f32> {
         let mut temp: Vec<f32> = vec![0.0; nx+2];
         for i in 0..nx {
@@ -132,7 +108,7 @@ impl BR1D {
         nx: usize,
         boundary: usize,
     ) -> BR1D {
-        let x = (0..nx).map(|i| i as f32 * dx).collect();
+        let x = (0..nx).map(|i| i as f64 * dx as f64).collect();
         let v = vec![v; nx];
         let m = vec![m; nx];
         let h = vec![h; nx];
@@ -177,27 +153,24 @@ impl BR1D {
         let mut chart = ChartBuilder::on(&root)
             .x_label_area_size(40)
             .y_label_area_size(40)
-            .margin(20)
+            .margin(50)
             .caption("BR1D", ("Arial", 20).into_font())
             .build_cartesian_2d(x_min..x_max, y_min..y_max)
             .unwrap();
 
         chart
             .configure_mesh()
-            // x label should also contain self.i
-            // .x_desc("Position (cm) (i = ".to_owned() + &self.i.to_string() + ")")
             .x_desc("Position (cm)")
             .y_desc("Voltage (mV)")
             .draw()
             .unwrap();
 
         // convert x and v to f64
-        let xf64: Vec<f64> = self.x.iter().map(|x| *x as f64).collect();
         let vf64: Vec<f64> = self.v.iter().map(|v| *v as f64).collect();
 
         chart
             .draw_series(LineSeries::new(
-                xf64.iter().zip(vf64.iter()).map(|(x, y)| (*x, *y)),
+                self.x.iter().zip(vf64.iter()).map(|(x, y)| (*x, *y)),
                 &RED,
             ))
             .unwrap();
@@ -208,15 +181,6 @@ impl BR1D {
         let mut istim: Vec<f32>;
         let stimmag = 26.4;
 
-        // debugging
-        // let mut m: Vec<f32> = vec![0.0; self.nx];
-        // let mut h: Vec<f32> = vec![0.0; self.nx];
-        // let mut j: Vec<f32> = vec![0.0; self.nx];
-        // let mut d: Vec<f32> = vec![0.0; self.nx];
-        // let mut f: Vec<f32> = vec![0.0; self.nx];
-        // let mut x1: Vec<f32> = vec![0.0; self.nx];
-        // let mut cai: Vec<f32> = vec![0.0; self.nx];
-        
         let mut c1: f32;
         let mut c2: f32;
         let mut c3: f32;
@@ -252,56 +216,7 @@ impl BR1D {
         let mut ix1: Vec<f32>;
         let mut ina: Vec<f32>;
         let mut is: Vec<f32>;
-
         let mut xlap: Vec<f32>;
-
-        // let mut lapmat: Vec<Vec<f32>> = vec![vec![0.0; self.nx]; self.nx];
-        // for i in 0..self.nx {
-        //     lapmat[i][i] = -2.0;
-        //     if i > 0 {
-        //         lapmat[i][i - 1] = 1.0;
-        //     }
-        //     if i < self.nx - 1 {
-        //         lapmat[i][i + 1] = 1.0;
-        //     }
-        // }
-
-        // if self.boundary == 0 {
-        //     // no-flux boundary conditions
-        //     lapmat[0][1] = 2.0;
-        //     lapmat[self.nx - 1][self.nx - 2] = 2.0;
-        // } else {
-        //     // periodic boundary conditions
-        //     lapmat[0][self.nx - 1] = 1.0;
-        //     lapmat[self.nx - 1][0] = 1.0;
-        // }
-        let mut lapmat: Array2<f32> = Array2::zeros((self.nx, self.nx));
-        for i in 0..self.nx {
-            lapmat[[i, i]] = -2.0;
-            if i > 0 {
-                lapmat[[i, i - 1]] = 1.0;
-            }
-            if i < self.nx - 1 {
-                lapmat[[i, i + 1]] = 1.0;
-            }
-        }
-
-        if self.boundary == 0 {
-            // no-flux boundary conditions
-            lapmat[[0, 1]] = 2.0;
-            lapmat[[self.nx - 1, self.nx - 2]] = 2.0;
-        } else {
-            // periodic boundary conditions
-            lapmat[[0, self.nx - 1]] = 1.0;
-            lapmat[[self.nx - 1, 0]] = 1.0;
-        }
-
-        let mut v_ndarray = Array1::from(self.v.clone());
-        let mut temp_v: Vec<f32> = vec![0.0; self.nx+2];
-        // temp_v[1:nx] = v
-        for i in 0..self.nx {
-            temp_v[i+1] = self.v[i];
-        }
 
         let mut stimtemplate = vec![0.0; self.nx];
         for i in 0..10 {
@@ -317,7 +232,6 @@ impl BR1D {
             c5 = 0.0;
             c6 = 0.057;
             c7 = 1.0;
-
             ax1 = self.a_and_b_parts(c1, c2, c3, c4, c5, c6, c7, self.v.clone());
             c1 = 0.0013;
             c2 = -0.06;
@@ -424,12 +338,6 @@ impl BR1D {
             dd = self.diff_vectors(ad, bd, self.d.clone());
             df = self.diff_vectors(af, bf, self.f.clone());
             dx1 = self.diff_vectors(ax1, bx1, self.x1.clone());
-            // dm = self.diff_vectors(am, bm, m.clone());
-            // dh = self.diff_vectors(ah, bh, h.clone());
-            // dj = self.diff_vectors(aj, bj, j.clone());
-            // dd = self.diff_vectors(ad, bd, d.clone());
-            // df = self.diff_vectors(af, bf, f.clone());
-            // dx1 = self.diff_vectors(ax1, bx1, x1.clone());
 
             self.m = self.iterate(self.m.clone(), self.dt, dm);
             self.h = self.iterate(self.h.clone(), self.dt, dh);
@@ -437,22 +345,12 @@ impl BR1D {
             self.d = self.iterate(self.d.clone(), self.dt, dd);
             self.f = self.iterate(self.f.clone(), self.dt, df);
             self.x1 = self.iterate(self.x1.clone(), self.dt, dx1);
-            // m = self.iterate(m, self.dt, dm);
-            // h = self.iterate(h, self.dt, dh);
-            // j = self.iterate(j, self.dt, dj);
-            // d = self.iterate(d, self.dt, dd);
-            // f = self.iterate(f, self.dt, df);
-            // x1 = self.iterate(x1, self.dt, dx1);
 
             es = self
                 .cai
                 .iter()
                 .map(|cai| -82.3 - 13.0287 * cai.ln())
                 .collect();
-            // es = cai
-            //     .iter()
-            //     .map(|cai| -82.3 - 13.0287 * cai.ln())
-            //     .collect();
 
             ik1 = self
             .v
@@ -472,13 +370,6 @@ impl BR1D {
                     x1 * 0.8 * ((0.04 * (v + 77.0)).exp() - 1.0) / (0.04 * (v + 35.0)).exp()
                 })
                 .collect();
-            // ix1 = x1
-            //     .iter()
-            //     .zip(self.v.iter())
-            //     .map(|(x1, v)| {
-            //         x1 * 0.8 * ((0.04 * (v + 77.0)).exp() - 1.0) / (0.04 * (v + 35.0)).exp()
-            //     })
-            //     .collect();
             
             ina = self
                 .m
@@ -489,14 +380,6 @@ impl BR1D {
                 .zip(self.v.iter())
                 .map(|(g, v)| g * (v - self.ena))
                 .collect();
-            // ina = m
-            //     .iter()
-            //     .zip(h.iter())
-            //     .zip(j.iter())
-            //     .map(|((m, h), j)| self.gna * m * m * m * h * j + self.gnac)
-            //     .zip(self.v.iter())
-            //     .map(|(g, v)| g * (v - self.ena))
-            //     .collect();
             
             is = self
                 .d
@@ -507,28 +390,14 @@ impl BR1D {
                 .zip(es.iter())
                 .map(|((df, v), es)| self.gs * df * (v - es))
                 .collect();
-            // is = d
-            //     .iter()
-            //     .zip(f.iter())
-            //     .map(|(d, f)| d * f)
-            //     .zip(self.v.iter())
-            //     .zip(es.iter())
-            //     .map(|((df, v), es)| self.gs * df * (v - es))
-            //     .collect();
 
             dcai = is
                 .iter()
                 .zip(self.cai.iter())
                 .map(|(is, cai)| -1e-7 * is + 0.07 * (1e-7 - cai))
                 .collect();
-            // dcai = is
-            //     .iter()
-            //     .zip(cai.iter())
-            //     .map(|(is, cai)| -1e-7 * is + 0.07 * (1e-7 - cai))
-            //     .collect();
 
             self.cai = self.iterate(self.cai.clone(), self.dt, dcai);
-            // cai = self.iterate(cai, self.dt, dcai);
 
             istim = vec![0.0; self.nx];
             if ntime % ((period / self.dt) as usize) < ((2.0 / self.dt) as usize) {
@@ -544,9 +413,6 @@ impl BR1D {
                 .map(|((((ik1, ix1), ina), is), istim)| -(ik1 + ix1 + ina + is - istim) / self.cm)
                 .collect();
 
-            // xlap = self.matrix_vector(lapmat.clone(), self.v.clone());
-            // xlap = self.matrix_vector_naive(lapmat.clone(), self.v.clone());
-            // xlap = lapmat.dot(&v_ndarray).to_vec();
             xlap = self.matrix_vector_smart(self.v.clone(), self.nx, self.boundary);
 
             xlap = xlap
@@ -561,11 +427,13 @@ impl BR1D {
                 .zip(xlap.iter())
                 .map(|((v, dv), xlap)| v + self.dt * dv + xlap)
                 .collect();
-
-            v_ndarray.assign(&Array1::from(self.v.clone()));
         }
 
         self.i += self.outputevery;
+    }
+
+    pub fn get_min_v(&self) -> f32 {
+        *self.v.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap()
     }
 
     pub fn clear(&self, canvas: HtmlCanvasElement) {

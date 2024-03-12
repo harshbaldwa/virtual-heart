@@ -194,6 +194,7 @@ model.addEventListener('change', function () {
                 br1d.tick();
                 br1d.draw(voltage_br1d);
             }, 0);
+
             // const start = performance.now();
             // for (let i = 0; i < 500; i++) {
             //     br1d.tick();
