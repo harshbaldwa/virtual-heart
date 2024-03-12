@@ -1,4 +1,4 @@
-import { BR0D } from "virtual-heart";
+import { BR0D, BR1D } from "virtual-heart";
 
 const model = document.getElementById('model');
 let optionGroup, option;
@@ -100,20 +100,20 @@ model.addEventListener('change', function () {
             current.height = 400;
 
             plots.appendChild(voltage);
-            
-            const v = -83.5;
-            const m = 0.0127;
-            const h = 0.9824;
-            const j = 0.9685;
-            const d = 0.0033;
-            const f = 0.9969;
-            const x1 = 0.1410;
-            const cai = 1.8545e-7;
-            const nsteps = 50000;
-            const br0d = BR0D.new(v, m, h, j, d, f, x1, cai, nsteps);
+
+            let v_br0d = -83.5;
+            let m_br0d = 0.0127;
+            let h_br0d = 0.9824;
+            let j_br0d = 0.9685;
+            let d_br0d = 0.0033;
+            let f_br0d = 0.9969;
+            let x1_br0d = 0.1410;
+            let cai_br0d = 1.8545e-7;
+            let nsteps_br0d = 50000;
+            const br0d = BR0D.new(v_br0d, m_br0d, h_br0d, j_br0d, d_br0d, f_br0d, x1_br0d, cai_br0d, nsteps_br0d);
             br0d.calculate();
             br0d.draw(voltage);
-            
+
             gatesActivate.addEventListener('change', function () {
                 if (this.checked) {
                     br0d.draw_gates(gates, whichGates);
@@ -158,6 +158,42 @@ model.addEventListener('change', function () {
                 });
             }
 
+            break;
+        case "br1d":
+            const voltage_br1d = document.createElement('canvas');
+            voltage_br1d.id = "voltage";
+            voltage_br1d.width = 800;
+            voltage_br1d.height = 400;
+
+            plots.appendChild(voltage_br1d);
+
+            let v_br1d = -83.5;
+            let m_br1d = 0.0127;
+            let h_br1d = 0.9824;
+            let j_br1d = 0.9685;
+            let d_br1d = 0.0033;
+            let f_br1d = 0.9969;
+            let x1_br1d = 0.1410;
+            let cai_br1d = 1.8545e-7;
+
+            let gna_br1d = 4.0;
+            let gnac_br1d = 0.003;
+            let ena_br1d = 50.0;
+            let gs_br1d = 0.09;
+            let cm_br1d = 1.0;
+
+            let dt_br1d = 0.02;
+            let dx_br1d = 0.025;
+            let diff_br1d = 0.001;
+            let outputevery_br1d = 10;
+            let nx_br1d = 1200;
+            let boundary_br1d = 1; // 0 = No-flux, 1 = Periodic
+            const br1d = BR1D.new(v_br1d, m_br1d, h_br1d, j_br1d, d_br1d, f_br1d, x1_br1d, cai_br1d, gna_br1d, gnac_br1d, ena_br1d, gs_br1d, cm_br1d, dt_br1d, dx_br1d, diff_br1d, outputevery_br1d, nx_br1d, boundary_br1d);
+            // run the animation
+            setInterval(function () {
+                br1d.tick();
+                br1d.draw(voltage_br1d);
+            }, 0);
             break;
         default:
             console.log("Model not found");
