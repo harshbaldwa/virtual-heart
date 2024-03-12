@@ -1,3 +1,5 @@
+use std::vec;
+
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
 use wasm_bindgen::prelude::*;
@@ -83,6 +85,25 @@ impl BR1D {
             for j in 0..mat.len() {
                 result[i] += mat[i][j] * vec[j];
             }
+        }
+        result
+    }
+
+    pub fn matrix_vector_smart(&self, vec: Vec<f32>, nx: usize, boundary: usize) -> Vec<f32> {
+        let mut temp: Vec<f32> = vec![0.0; nx+2];
+        for i in 0..nx {
+            temp[i+1] = vec[i];
+        }
+        let mut result: Vec<f32> = vec![0.0; nx];
+        for i in 0..nx {
+            result[i] = temp[i] - 2.0 * temp[i+1] + temp[i+2];
+        }
+        if boundary == 0 {
+            result[0] += temp[2];
+            result[nx-1] += temp[nx-1];
+        } else {
+            result[0] += temp[nx];
+            result[nx-1] += temp[1];
         }
         result
     }
@@ -276,6 +297,11 @@ impl BR1D {
         }
 
         let mut v_ndarray = Array1::from(self.v.clone());
+        let mut temp_v: Vec<f32> = vec![0.0; self.nx+2];
+        // temp_v[1:nx] = v
+        for i in 0..self.nx {
+            temp_v[i+1] = self.v[i];
+        }
 
         let mut stimtemplate = vec![0.0; self.nx];
         for i in 0..10 {
@@ -520,7 +546,8 @@ impl BR1D {
 
             // xlap = self.matrix_vector(lapmat.clone(), self.v.clone());
             // xlap = self.matrix_vector_naive(lapmat.clone(), self.v.clone());
-            xlap = lapmat.dot(&v_ndarray).to_vec();
+            // xlap = lapmat.dot(&v_ndarray).to_vec();
+            xlap = self.matrix_vector_smart(self.v.clone(), self.nx, self.boundary);
 
             xlap = xlap
                 .iter()

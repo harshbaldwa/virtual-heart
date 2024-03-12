@@ -185,7 +185,7 @@ model.addEventListener('change', function () {
             let dt_br1d = 0.02;
             let dx_br1d = 0.025;
             let diff_br1d = 0.001;
-            let outputevery_br1d = 10;
+            let outputevery_br1d = 20;
             let nx_br1d = 1200;
             let boundary_br1d = 1; // 0 = No-flux, 1 = Periodic
             const br1d = BR1D.new(v_br1d, m_br1d, h_br1d, j_br1d, d_br1d, f_br1d, x1_br1d, cai_br1d, gna_br1d, gnac_br1d, ena_br1d, gs_br1d, cm_br1d, dt_br1d, dx_br1d, diff_br1d, outputevery_br1d, nx_br1d, boundary_br1d);
@@ -194,6 +194,13 @@ model.addEventListener('change', function () {
                 br1d.tick();
                 br1d.draw(voltage_br1d);
             }, 0);
+            // const start = performance.now();
+            // for (let i = 0; i < 500; i++) {
+            //     br1d.tick();
+            //     br1d.draw(voltage_br1d);
+            // }
+            // const end = performance.now();
+            // console.log("Average time to run 500 steps: " + (end - start)/500 + "ms");
             break;
         default:
             console.log("Model not found");
