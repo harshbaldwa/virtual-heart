@@ -55,14 +55,23 @@
 /******/ 		"../pkg/virtual_heart_bg.wasm": function() {
 /******/ 			return {
 /******/ 				"./virtual_heart_bg.js": {
-/******/ 					"__wbindgen_object_clone_ref": function(p0i32) {
-/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbindgen_object_clone_ref"](p0i32);
-/******/ 					},
 /******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
 /******/ 					},
+/******/ 					"__wbindgen_object_clone_ref": function(p0i32) {
+/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbindgen_object_clone_ref"](p0i32);
+/******/ 					},
 /******/ 					"__wbindgen_string_new": function(p0i32,p1i32) {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbindgen_string_new"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_setAttribute_3c9f6c303b696daa": function(p0i32,p1i32,p2i32,p3i32,p4i32) {
+/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_setAttribute_3c9f6c303b696daa"](p0i32,p1i32,p2i32,p3i32,p4i32);
+/******/ 					},
+/******/ 					"__wbg_remove_49b0a5925a04b955": function(p0i32) {
+/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_remove_49b0a5925a04b955"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_append_fcf463f0b4a8f219": function(p0i32,p1i32) {
+/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_append_fcf463f0b4a8f219"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbg_instanceof_Window_f401953a2cf86220": function(p0i32) {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_instanceof_Window_f401953a2cf86220"](p0i32);
@@ -75,15 +84,6 @@
 /******/ 					},
 /******/ 					"__wbg_createElement_8bae7856a4bb7411": function(p0i32,p1i32,p2i32) {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_createElement_8bae7856a4bb7411"](p0i32,p1i32,p2i32);
-/******/ 					},
-/******/ 					"__wbg_setAttribute_3c9f6c303b696daa": function(p0i32,p1i32,p2i32,p3i32,p4i32) {
-/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_setAttribute_3c9f6c303b696daa"](p0i32,p1i32,p2i32,p3i32,p4i32);
-/******/ 					},
-/******/ 					"__wbg_remove_49b0a5925a04b955": function(p0i32) {
-/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_remove_49b0a5925a04b955"](p0i32);
-/******/ 					},
-/******/ 					"__wbg_append_fcf463f0b4a8f219": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_append_fcf463f0b4a8f219"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbg_instanceof_HtmlElement_3bcc4ff70cfdcba5": function(p0i32) {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_instanceof_HtmlElement_3bcc4ff70cfdcba5"](p0i32);
@@ -169,6 +169,9 @@
 /******/ 					"__wbg_call_27c0f87801dedf93": function(p0i32,p1i32) {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_call_27c0f87801dedf93"](p0i32,p1i32);
 /******/ 					},
+/******/ 					"__wbindgen_string_get": function(p0i32,p1i32) {
+/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbindgen_string_get"](p0i32,p1i32);
+/******/ 					},
 /******/ 					"__wbg_self_ce0dbfc45cf2f5be": function() {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_self_ce0dbfc45cf2f5be"]();
 /******/ 					},
@@ -183,9 +186,6 @@
 /******/ 					},
 /******/ 					"__wbindgen_is_undefined": function(p0i32) {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbindgen_is_undefined"](p0i32);
-/******/ 					},
-/******/ 					"__wbindgen_string_get": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbindgen_string_get"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbg_abs_cb8ac6309536b512": function(p0f64) {
 /******/ 						return installedModules["../pkg/virtual_heart_bg.js"].exports["__wbg_abs_cb8ac6309536b512"](p0f64);
@@ -300,7 +300,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"../pkg/virtual_heart_bg.wasm":"3b1dfa1b2b941b6aed2d"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"../pkg/virtual_heart_bg.wasm":"20a517abfdadb4f94627"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
