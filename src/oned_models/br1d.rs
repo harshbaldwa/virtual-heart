@@ -7,26 +7,27 @@ use web_sys::HtmlCanvasElement;
 pub struct BR1D {
     x: Vec<f64>,
     // parameters
-    gna: f32,
-    gnac: f32,
-    ena: f32,
-    gs: f32,
-    cm: f32,
+    gna: f64,
+    gnac: f64,
+    ena: f64,
+    gs: f64,
+    cm: f64,
     // numerical parameters
-    dt: f32,
-    dx: f32,
-    diff: f32,
+    dt: f64,
+    dx: f64,
+    diff: f64,
     outputevery: usize,
     nx: usize,
+    period: f64,
     // initial conditions
-    v: Vec<f32>,
-    m: Vec<f32>,
-    h: Vec<f32>,
-    j: Vec<f32>,
-    d: Vec<f32>,
-    f: Vec<f32>,
-    x1: Vec<f32>,
-    cai: Vec<f32>,
+    v: Vec<f64>,
+    m: Vec<f64>,
+    h: Vec<f64>,
+    j: Vec<f64>,
+    d: Vec<f64>,
+    f: Vec<f64>,
+    x1: Vec<f64>,
+    cai: Vec<f64>,
     // extra variables
     boundary: usize,
     // iteration counter
@@ -36,21 +37,21 @@ pub struct BR1D {
 impl BR1D {
     pub fn a_and_b_parts(
         &self,
-        c1: f32,
-        c2: f32,
-        c3: f32,
-        c4: f32,
-        c5: f32,
-        c6: f32,
-        c7: f32,
-        arr: Vec<f32>,
-    ) -> Vec<f32> {
+        c1: f64,
+        c2: f64,
+        c3: f64,
+        c4: f64,
+        c5: f64,
+        c6: f64,
+        c7: f64,
+        arr: Vec<f64>,
+    ) -> Vec<f64> {
         arr.iter()
             .map(|v| (c1 * (c2 * (v + c3)).exp() + c4 * (v + c5)) / ((c6 * (v + c3)).exp() + c7))
             .collect()
     }
 
-    pub fn diff_vectors(&self, a: Vec<f32>, b: Vec<f32>, arr: Vec<f32>) -> Vec<f32> {
+    pub fn diff_vectors(&self, a: Vec<f64>, b: Vec<f64>, arr: Vec<f64>) -> Vec<f64> {
         a.iter()
             .zip(arr.iter())
             .zip(b.iter())
@@ -58,19 +59,19 @@ impl BR1D {
             .collect()
     }
 
-    pub fn iterate(&self, arr: Vec<f32>, dt: f32, d_arr: Vec<f32>) -> Vec<f32> {
+    pub fn iterate(&self, arr: Vec<f64>, dt: f64, d_arr: Vec<f64>) -> Vec<f64> {
         arr.iter()
             .zip(d_arr.iter())
             .map(|(arr, d_arr)| arr + dt * d_arr)
             .collect()
     }
 
-    pub fn matrix_vector_smart(&self, vec: Vec<f32>, nx: usize, boundary: usize) -> Vec<f32> {
-        let mut temp: Vec<f32> = vec![0.0; nx+2];
+    pub fn matrix_vector_smart(&self, vec: Vec<f64>, nx: usize, boundary: usize) -> Vec<f64> {
+        let mut temp: Vec<f64> = vec![0.0; nx+2];
         for i in 0..nx {
             temp[i+1] = vec[i];
         }
-        let mut result: Vec<f32> = vec![0.0; nx];
+        let mut result: Vec<f64> = vec![0.0; nx];
         for i in 0..nx {
             result[i] = temp[i] - 2.0 * temp[i+1] + temp[i+2];
         }
@@ -87,25 +88,54 @@ impl BR1D {
 
 #[wasm_bindgen]
 impl BR1D {
+    pub fn test(n: usize) -> BR1D {
+        BR1D {
+            x: vec![0.0; n],
+            gna: 0.0,
+            gnac: 0.0,
+            ena: 0.0,
+            gs: 0.0,
+            cm: 0.0,
+            dt: 0.0,
+            dx: 0.0,
+            diff: 0.0,
+            outputevery: 0,
+            nx: 0,
+            period: 0.0,
+            v: vec![0.0; n],
+            m: vec![0.0; n],
+            h: vec![0.0; n],
+            j: vec![0.0; n],
+            d: vec![0.0; n],
+            f: vec![0.0; n],
+            x1: vec![0.0; n],
+            cai: vec![0.0; n],
+            boundary: 0,
+            i: 0
+        }
+    }
+
+
     pub fn new(
-        v: f32,
-        m: f32,
-        h: f32,
-        j: f32,
-        d: f32,
-        f: f32,
-        x1: f32,
-        cai: f32,
-        gna: f32,
-        gnac: f32,
-        ena: f32,
-        gs: f32,
-        cm: f32,
-        dt: f32,
-        dx: f32,
-        diff: f32,
+        v: f64,
+        m: f64,
+        h: f64,
+        j: f64,
+        d: f64,
+        f: f64,
+        x1: f64,
+        cai: f64,
+        gna: f64,
+        gnac: f64,
+        ena: f64,
+        gs: f64,
+        cm: f64,
+        dt: f64,
+        dx: f64,
+        diff: f64,
         outputevery: usize,
         nx: usize,
+        period: f64,
         boundary: usize,
     ) -> BR1D {
         let x = (0..nx).map(|i| i as f64 * dx as f64).collect();
@@ -130,6 +160,7 @@ impl BR1D {
             diff,
             outputevery,
             nx,
+            period,
             v,
             m,
             h,
@@ -139,7 +170,7 @@ impl BR1D {
             x1,
             cai,
             boundary,
-            i: 0,
+            i: 0
         }
     }
 
@@ -147,14 +178,14 @@ impl BR1D {
         // self.clear(canvas.clone());
         let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
         let root = backend.into_drawing_area();
-        let (x_min, x_max) = (0.0, (self.nx as f32 * self.dx - self.dx) as f64);
+        let (x_min, x_max) = (0.0, (self.nx as f64 * self.dx - self.dx) as f64);
         let (y_min, y_max) = (-100.0, 100.0);
         root.fill(&WHITE).unwrap();
         let mut chart = ChartBuilder::on(&root)
-            .x_label_area_size(40)
-            .y_label_area_size(40)
-            .margin(50)
-            .caption("BR1D", ("Arial", 20).into_font())
+            // .x_label_area_size(40)
+            // .y_label_area_size(40)
+            // .margin(50)
+            // .caption("BR1D", ("Arial", 20).into_font())
             .build_cartesian_2d(x_min..x_max, y_min..y_max)
             .unwrap();
 
@@ -165,58 +196,54 @@ impl BR1D {
             .draw()
             .unwrap();
 
-        // convert x and v to f64
-        let vf64: Vec<f64> = self.v.iter().map(|v| *v as f64).collect();
-
         chart
             .draw_series(LineSeries::new(
-                self.x.iter().zip(vf64.iter()).map(|(x, y)| (*x, *y)),
+                self.x.iter().zip(self.v.iter()).map(|(x, y)| (*x, *y)),
                 &RED,
             ))
             .unwrap();
     }
 
     pub fn tick(&mut self) {
-        let period = 310.0;
-        let mut istim: Vec<f32>;
+        let mut istim: Vec<f64>;
         let stimmag = 26.4;
 
-        let mut c1: f32;
-        let mut c2: f32;
-        let mut c3: f32;
-        let mut c4: f32;
-        let mut c5: f32;
-        let mut c6: f32;
-        let mut c7: f32;
+        let mut c1: f64;
+        let mut c2: f64;
+        let mut c3: f64;
+        let mut c4: f64;
+        let mut c5: f64;
+        let mut c6: f64;
+        let mut c7: f64;
 
-        let mut ax1: Vec<f32>;
-        let mut bx1: Vec<f32>;
-        let mut am: Vec<f32>;
-        let mut bm: Vec<f32>;
-        let mut ah: Vec<f32>;
-        let mut bh: Vec<f32>;
-        let mut aj: Vec<f32>;
-        let mut bj: Vec<f32>;
-        let mut ad: Vec<f32>;
-        let mut bd: Vec<f32>;
-        let mut af: Vec<f32>;
-        let mut bf: Vec<f32>;
+        let mut ax1: Vec<f64>;
+        let mut bx1: Vec<f64>;
+        let mut am: Vec<f64>;
+        let mut bm: Vec<f64>;
+        let mut ah: Vec<f64>;
+        let mut bh: Vec<f64>;
+        let mut aj: Vec<f64>;
+        let mut bj: Vec<f64>;
+        let mut ad: Vec<f64>;
+        let mut bd: Vec<f64>;
+        let mut af: Vec<f64>;
+        let mut bf: Vec<f64>;
 
-        let mut dv: Vec<f32>;
-        let mut dm: Vec<f32>;
-        let mut dh: Vec<f32>;
-        let mut dj: Vec<f32>;
-        let mut dd: Vec<f32>;
-        let mut df: Vec<f32>;
-        let mut dx1: Vec<f32>;
-        let mut dcai: Vec<f32>;
+        let mut dv: Vec<f64>;
+        let mut dm: Vec<f64>;
+        let mut dh: Vec<f64>;
+        let mut dj: Vec<f64>;
+        let mut dd: Vec<f64>;
+        let mut df: Vec<f64>;
+        let mut dx1: Vec<f64>;
+        let mut dcai: Vec<f64>;
 
-        let mut es: Vec<f32>;
-        let mut ik1: Vec<f32>;
-        let mut ix1: Vec<f32>;
-        let mut ina: Vec<f32>;
-        let mut is: Vec<f32>;
-        let mut xlap: Vec<f32>;
+        let mut es: Vec<f64>;
+        let mut ik1: Vec<f64>;
+        let mut ix1: Vec<f64>;
+        let mut ina: Vec<f64>;
+        let mut is: Vec<f64>;
+        let mut xlap: Vec<f64>;
 
         let mut stimtemplate = vec![0.0; self.nx];
         for i in 0..10 {
@@ -400,7 +427,7 @@ impl BR1D {
             self.cai = self.iterate(self.cai.clone(), self.dt, dcai);
 
             istim = vec![0.0; self.nx];
-            if ntime % ((period / self.dt) as usize) < ((2.0 / self.dt) as usize) {
+            if ntime % ((self.period / self.dt) as usize) < ((2.0 / self.dt) as usize) {
                 istim = stimtemplate.iter().map(|x| stimmag * x).collect();
             }
 
@@ -414,6 +441,7 @@ impl BR1D {
                 .collect();
 
             xlap = self.matrix_vector_smart(self.v.clone(), self.nx, self.boundary);
+            // xlap = vec![0.0; self.nx];
 
             xlap = xlap
                 .iter()
@@ -432,8 +460,12 @@ impl BR1D {
         self.i += self.outputevery;
     }
 
-    pub fn get_min_v(&self) -> f32 {
-        *self.v.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap()
+    pub fn set_stimulus(&mut self, index: usize, v: f64) {
+        self.v[index] = v;
+    }
+
+    pub fn set_boundary(&mut self, boundary: usize) {
+        self.boundary = boundary;
     }
 
     pub fn clear(&self, canvas: HtmlCanvasElement) {

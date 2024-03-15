@@ -164,8 +164,29 @@ model.addEventListener('change', function () {
             voltage_br1d.id = "voltage";
             voltage_br1d.width = 800;
             voltage_br1d.height = 400;
+            // margin of 50px
+            voltage_br1d.style.margin = "50px";
 
             plots.appendChild(voltage_br1d);
+
+            // add drop down to controls for periodic vs no-flux boundary conditions
+            const boundary_control = document.createElement('select');
+            boundary_control.id = "boundary";
+            const noflux = document.createElement('option');
+            noflux.value = "0";
+            noflux.text = "No-flux";
+            const periodic = document.createElement('option');
+            periodic.value = "1";
+            periodic.text = "Periodic";
+            boundary_control.appendChild(noflux);
+            boundary_control.appendChild(periodic);
+            controls.appendChild(boundary_control);
+
+            // listen for changes to the boundary condition
+            boundary_control.addEventListener('change', function () {
+                br1d.set_boundary(parseInt(this.value));
+            });
+
 
             let v_br1d = -83.5;
             let m_br1d = 0.0127;
@@ -183,27 +204,38 @@ model.addEventListener('change', function () {
             let cm_br1d = 1.0;
 
             let dt_br1d = 0.02;
+            // let dt_br1d = 0.03;
             let dx_br1d = 0.025;
             let diff_br1d = 0.001;
+            // let diff_br1d = 0.00;
             let outputevery_br1d = 20;
             let nx_br1d = 1200;
-            let boundary_br1d = 1; // 0 = No-flux, 1 = Periodic
-            const br1d = BR1D.new(v_br1d, m_br1d, h_br1d, j_br1d, d_br1d, f_br1d, x1_br1d, cai_br1d, gna_br1d, gnac_br1d, ena_br1d, gs_br1d, cm_br1d, dt_br1d, dx_br1d, diff_br1d, outputevery_br1d, nx_br1d, boundary_br1d);
+            let period_br1d = 6100;
+            let boundary_br1d = 0; // 0 = No-flux, 1 = Periodic
+            const br1d = BR1D.new(v_br1d, m_br1d, h_br1d, j_br1d, d_br1d, f_br1d, x1_br1d, cai_br1d, gna_br1d, gnac_br1d, ena_br1d, gs_br1d, cm_br1d, dt_br1d, dx_br1d, diff_br1d, outputevery_br1d, nx_br1d, period_br1d, boundary_br1d);
             // run the animation
             setInterval(function () {
                 br1d.tick();
                 br1d.draw(voltage_br1d);
             }, 0);
 
-            // const start = performance.now();
-            // for (let i = 0; i < 500; i++) {
-            //     br1d.tick();
-            //     br1d.draw(voltage_br1d);
-            // }
-            // const end = performance.now();
-            // console.log("Average time to run 500 steps: " + (end - start)/500 + "ms");
+            // make the canvas interactive
+            voltage_br1d.addEventListener('click', function (e) {
+                const rect = voltage_br1d.getBoundingClientRect();
+                
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const i = Math.floor(x / (voltage_br1d.width / nx_br1d));
+                const j = 100 - Math.floor(y / (voltage_br1d.height / 200));
+                br1d.set_stimulus(i, j);
+            });
+
+
             break;
         default:
             console.log("Model not found");
     }
 });
+
+model.value = "br1d";
+model.dispatchEvent(new Event('change'));
