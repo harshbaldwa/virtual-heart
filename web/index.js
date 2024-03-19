@@ -1,4 +1,4 @@
-import { BR0D, BR1D } from "virtual-heart";
+import { BR0D, BR1D, FOX1D } from "virtual-heart";
 
 const model = document.getElementById('model');
 let optionGroup, option;
@@ -230,6 +230,119 @@ model.addEventListener('change', function () {
                 br1d.set_stimulus(i, j);
             });
 
+            break;
+        case "fox1d":
+            const voltage_fox1d = document.createElement('canvas');
+            voltage_fox1d.id = "voltage";
+            voltage_fox1d.width = 800;
+            voltage_fox1d.height = 400;
+            // margin of 50px
+            voltage_fox1d.style.margin = "50px";
+
+            plots.appendChild(voltage_fox1d);
+
+            // add drop down to controls for periodic vs no-flux boundary conditions
+            const boundary_control_fox1d = document.createElement('select');
+            boundary_control_fox1d.id = "boundary";
+            const noflux_fox1d = document.createElement('option');
+            noflux_fox1d.value = "0";
+            noflux_fox1d.text = "No-flux";
+            const periodic_fox1d = document.createElement('option');
+            periodic_fox1d.value = "1";
+            periodic_fox1d.text = "Periodic";
+            boundary_control_fox1d.appendChild(noflux_fox1d);
+            boundary_control_fox1d.appendChild(periodic_fox1d);
+            controls.appendChild(boundary_control_fox1d);
+
+            // listen for changes to the boundary condition
+            boundary_control_fox1d.addEventListener('change', function () {
+                fox1d.set_boundary(parseInt(this.value));
+            });
+
+
+            let v_f1 = -94.7;
+            let ccai_f1 = 0.0472;
+            let ccasr_f1 = 320.0;
+            let xf_f1 = 1.0;
+            let xd_f1 = 0.0;
+            let xm_f1 = 0.0;
+            let xh_f1 = 1.0;
+            let xj_f1 = 1.0;
+            let xfca_f1 = 1.0;
+            let xkr_f1 = 0.0;
+            let xks_f1 = 0.0;
+            let xto_f1 = 0.0;
+            let yto_f1 = 1.0;
+
+            let gna_f1 = 12.8;
+            let gk1_f1 = 2.8;
+            let gkr_f1 = 0.0136;
+            let gks_f1 = 0.0245;
+            let gkp_f1 = 0.002216;
+            let gto_f1 = 0.23815;
+            let gnab_f1 = 0.0031;
+            let gcab_f1 = 0.0003842;
+            let pca_f1 = 0.0000226;
+            let pcak_f1 = 5.79e-7;
+            let prel_f1 = 6.0;
+            let pleak_f1 = 0.000001;
+            let xinakbar_f1 = 0.693;
+            let xicahalfbar_f1 = -0.265;
+            let xipcabar_f1 = 0.05;
+            let tt_f1 = 310.0;
+            let acap_f1 = 1.534e-4;
+            let csc_f1 = 1.0;
+            let eta_f1 = 0.35;
+            let xksat_f1 = 0.2;
+            let xknaca_f1 = 1500.0;
+            let xkmfca_f1 = 0.18;
+            let xkmk1_f1 = 13.0;
+            let xkmna_f1 = 87.5;
+            let xkmca_f1 = 1380.0;
+            let xkmnai_f1 = 10.0;
+            let xkmko_f1 = 1.5;
+            let xkmpca_f1 = 0.05;
+            let xkmup_f1 = 0.32;
+            let cmdntot_f1 = 10.0;
+            let csqntot_f1 = 10000.0;
+            let xkmcmdn_f1 = 2.0;
+            let xkmcsqn_f1 = 600.0;
+            let vup_f1 = 0.1;
+            let vmyo_f1 = 25.84e-6;
+            let vsr_f1 = 2e-6;
+            let cnai_f1 = 10.0;
+            let cki_f1 = 149.4;
+            let cnao_f1 = 138.0;
+            let cko_f1 = 4.0;
+            let ccao_f1 = 2000.0;
+            let stim_f1 = -80.0;
+            let xstimdur_f1 = 1.0;
+
+            let nx_f1 = 1200;
+            let dt_f1 = 0.02;
+            let dx_f1 = 0.0125;
+            let diff_f1 = 0.001;
+            let outputevery_f1 = 20;
+            let boundary_f1 = 0; // 0 = No-flux, 1 = Periodic
+            
+            const fox1d = FOX1D.new(v_f1, ccai_f1, ccasr_f1, xf_f1, xd_f1, xm_f1, xh_f1, xj_f1, xfca_f1, xkr_f1, xks_f1, xto_f1, yto_f1, gna_f1, gk1_f1, gkr_f1, gks_f1, gkp_f1, gto_f1, gnab_f1, gcab_f1, pca_f1, pcak_f1, prel_f1, pleak_f1, xinakbar_f1, xicahalfbar_f1, xipcabar_f1, tt_f1, acap_f1, csc_f1, eta_f1, xksat_f1, xknaca_f1, xkmfca_f1, xkmk1_f1, xkmna_f1, xkmca_f1, xkmnai_f1, xkmko_f1, xkmpca_f1, xkmup_f1, cmdntot_f1, csqntot_f1, xkmcmdn_f1, xkmcsqn_f1, vup_f1, vmyo_f1, vsr_f1, cnai_f1, cki_f1, cnao_f1, cko_f1, ccao_f1, stim_f1, xstimdur_f1, nx_f1, dt_f1, dx_f1, diff_f1, outputevery_f1, boundary_f1);
+
+            // run the animation
+            setInterval(function () {
+                fox1d.tick();
+                fox1d.draw(voltage_fox1d);
+            }, 0);
+
+            // make the canvas interactive
+            voltage_fox1d.addEventListener('click', function (e) {
+                const rect = voltage_fox1d.getBoundingClientRect();
+                
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const i = Math.floor(x / (voltage_fox1d.width / nx_f1));
+                const j = 100 - Math.floor(y / (voltage_fox1d.height / 200));
+                fox1d.set_stimulus(i, j);
+            });
 
             break;
         default:
@@ -237,5 +350,5 @@ model.addEventListener('change', function () {
     }
 });
 
-model.value = "br1d";
+model.value = "fox1d";
 model.dispatchEvent(new Event('change'));

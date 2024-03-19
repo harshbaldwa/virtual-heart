@@ -175,17 +175,12 @@ impl BR1D {
     }
 
     pub fn draw(&self, canvas: HtmlCanvasElement) {
-        // self.clear(canvas.clone());
         let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
         let root = backend.into_drawing_area();
         let (x_min, x_max) = (0.0, (self.nx as f64 * self.dx - self.dx) as f64);
         let (y_min, y_max) = (-100.0, 100.0);
         root.fill(&WHITE).unwrap();
         let mut chart = ChartBuilder::on(&root)
-            // .x_label_area_size(40)
-            // .y_label_area_size(40)
-            // .margin(50)
-            // .caption("BR1D", ("Arial", 20).into_font())
             .build_cartesian_2d(x_min..x_max, y_min..y_max)
             .unwrap();
 
@@ -466,11 +461,5 @@ impl BR1D {
 
     pub fn set_boundary(&mut self, boundary: usize) {
         self.boundary = boundary;
-    }
-
-    pub fn clear(&self, canvas: HtmlCanvasElement) {
-        let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
-        let root = backend.into_drawing_area();
-        root.fill(&WHITE).unwrap();
     }
 }

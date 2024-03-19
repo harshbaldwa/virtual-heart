@@ -11,6 +11,11 @@
             "name": "Beeler-Reuter 1D",
             "value": "br1d",
             "selected": false
+        },
+        {
+            "name": "Fox 1D",
+            "value": "fox1d",
+            "selected": false
         }
     ]
 }
