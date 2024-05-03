@@ -181,6 +181,9 @@ impl BR1D {
         let (y_min, y_max) = (-100.0, 100.0);
         root.fill(&WHITE).unwrap();
         let mut chart = ChartBuilder::on(&root)
+            .x_label_area_size(40)
+            .y_label_area_size(55)
+            .caption("BR1D", ("Arial", 20).into_font())
             .build_cartesian_2d(x_min..x_max, y_min..y_max)
             .unwrap();
 
@@ -197,6 +200,91 @@ impl BR1D {
                 &RED,
             ))
             .unwrap();
+    }
+
+    pub fn draw_gates(&self, canvas: HtmlCanvasElement, gates: &str) {
+        let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
+        let root = backend.into_drawing_area();
+        let (x_min, x_max) = (0.0, (self.nx as f64 * self.dx - self.dx) as f64);
+        let (y_min, y_max) = (-0.2, 1.2);
+        root.fill(&WHITE).unwrap();
+        
+        let mut chart = ChartBuilder::on(&root)
+            .x_label_area_size(40)
+            .y_label_area_size(55)
+            .caption("FOX1D", ("Arial", 20).into_font())
+            .build_cartesian_2d(x_min..x_max, y_min..y_max)
+            .unwrap();
+
+        chart
+            .configure_mesh()
+            .x_desc("Position (cm)")
+            .y_desc("Voltage (mV)")
+            .draw()
+            .unwrap();
+
+        if gates.contains("m") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.x.iter().zip(self.m.iter()).map(|(x, y)| (*x, *y)),
+                    &RED,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("h") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.x.iter().zip(self.h.iter()).map(|(x, y)| (*x, *y)),
+                    &GREEN,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("j") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.x.iter().zip(self.j.iter()).map(|(x, y)| (*x, *y)),
+                    &BLUE,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("d") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.x.iter().zip(self.d.iter()).map(|(x, y)| (*x, *y)),
+                    &YELLOW,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("f") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.x.iter().zip(self.f.iter()).map(|(x, y)| (*x, *y)),
+                    &CYAN,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("x1") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.x.iter().zip(self.x1.iter()).map(|(x, y)| (*x, *y)),
+                    &MAGENTA,
+                ))
+                .unwrap();
+        }
+
+        if gates.contains("cai") {
+            chart
+                .draw_series(LineSeries::new(
+                    self.x.iter().zip(self.cai.iter()).map(|(x, y)| (*x, *y)),
+                    &BLACK,
+                ))
+                .unwrap();
+        }
     }
 
     pub fn tick(&mut self) {
@@ -456,7 +544,11 @@ impl BR1D {
     }
 
     pub fn set_stimulus(&mut self, index: usize, v: f64) {
-        self.v[index] = v;
+        let start = if index < 10 { 0 } else { index - 10 };
+        let end = if index + 10 > self.nx { self.nx } else { index + 10 };
+        for i in start..end {
+            self.v[i] = v;
+        }
     }
 
     pub fn set_boundary(&mut self, boundary: usize) {

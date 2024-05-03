@@ -78,8 +78,7 @@ impl BR0D {
         let (y_min, y_max) = (-100.0, 50.0);
         let mut chart = ChartBuilder::on(&root)
             .x_label_area_size(40)
-            .y_label_area_size(40)
-            .margin(20)
+            .y_label_area_size(55)
             .caption("BR0D", ("Arial", 20).into_font())
             .build_cartesian_2d(x_min..x_max, y_min..y_max)
             .unwrap();

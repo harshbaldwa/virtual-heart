@@ -141,7 +141,7 @@ model.addEventListener('change', function () {
                     if (this.checked) {
                         whichGates += this.id;
                     } else {
-                        whichGates = whichGates.replace(this.value, "");
+                        whichGates = whichGates.replace(this.id, "");
                     }
                     br0d.draw_gates(gates, whichGates);
                 });
@@ -152,7 +152,7 @@ model.addEventListener('change', function () {
                     if (this.checked) {
                         whichCurrents += this.id;
                     } else {
-                        whichCurrents = whichCurrents.replace(this.value, "");
+                        whichCurrents = whichCurrents.replace(this.id, "");
                     }
                     br0d.draw_current(current, whichCurrents);
                 });
@@ -160,12 +160,43 @@ model.addEventListener('change', function () {
 
             break;
         case "br1d":
+            const gatesActivate_br1d = document.createElement('input');
+            gatesActivate_br1d.type = "checkbox";
+            gatesActivate_br1d.id = "gatesActivate_br1d";
+            const gatesLabel_br1d = document.createElement('label');
+            gatesLabel_br1d.htmlFor = "gatesActivate_br1d";
+            gatesLabel_br1d.appendChild(document.createTextNode("Gates"));
+            controls.appendChild(gatesActivate_br1d);
+            controls.appendChild(gatesLabel_br1d);
+
+            let glabels_br1d = ["m", "h", "j", "d", "f", "x1", "cai"];
+
+            const gatesDiv_br1d = document.createElement('div');
+            gatesDiv_br1d.id = "gatesDiv_br1d";
+            gatesDiv_br1d.style.display = "none";
+            controls.appendChild(gatesDiv_br1d);
+            for (let i = 0; i < glabels_br1d.length; i++) {
+                const gate = document.createElement('input');
+                gate.type = "checkbox";
+                gate.id = glabels_br1d[i];
+                gate.checked = i == 0;
+                const gateLabel = document.createElement('label');
+                gateLabel.htmlFor = glabels_br1d[i];
+                gateLabel.appendChild(document.createTextNode(glabels_br1d[i]));
+                gatesDiv_br1d.appendChild(gate);
+                gatesDiv_br1d.appendChild(gateLabel);
+            }
+
+            let whichGates_br1d = glabels_br1d[0];
+
             const voltage_br1d = document.createElement('canvas');
             voltage_br1d.id = "voltage";
             voltage_br1d.width = 800;
             voltage_br1d.height = 400;
-            // margin of 50px
-            voltage_br1d.style.margin = "50px";
+            const gates_br1d = document.createElement('canvas');
+            gates_br1d.id = "gates_br1d";
+            gates_br1d.width = 800;
+            gates_br1d.height = 400;
 
             plots.appendChild(voltage_br1d);
 
@@ -217,6 +248,9 @@ model.addEventListener('change', function () {
             setInterval(function () {
                 br1d.tick();
                 br1d.draw(voltage_br1d);
+                if (gatesActivate_br1d.checked) {
+                    br1d.draw_gates(gates_br1d, whichGates_br1d);
+                }
             }, 0);
 
             // make the canvas interactive
@@ -225,19 +259,72 @@ model.addEventListener('change', function () {
                 
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                const i = Math.floor(x / (voltage_br1d.width / nx_br1d));
-                const j = 100 - Math.floor(y / (voltage_br1d.height / 200));
+                const i = Math.floor((x - 55) / ((voltage_br1d.width - 55) / nx_br1d));
+                const j = 100 - Math.floor((y - 20) / ((voltage_br1d.height - 55) / 200));
                 br1d.set_stimulus(i, j);
             });
 
+            gatesActivate_br1d.addEventListener('change', function () {
+                if (this.checked) {
+                    br1d.draw_gates(gates_br1d, whichGates_br1d);
+                    gatesDiv_br1d.style.display = "block";
+                    plots.appendChild(gates_br1d);
+                } else {
+                    gatesDiv.style.display = "none";
+                    plots.removeChild(gates_br1d);
+                }
+            });
+
+            for (let i = 0; i < glabels_br1d.length; i++) {
+                document.getElementById(glabels_br1d[i]).addEventListener('change', function () {
+                    if (this.checked) {
+                        whichGates_br1d += this.id;
+                    } else {
+                        whichGates_br1d = whichGates_br1d.replace(this.id, "");
+                    }
+                    br1d.draw_gates(gates_br1d, whichGates_br1d);
+                });
+            }
+
             break;
         case "fox1d":
+            const gatesActivate_fox1d = document.createElement('input');
+            gatesActivate_fox1d.type = "checkbox";
+            gatesActivate_fox1d.id = "gatesActivate_fox1d";
+            const gatesLabel_fox1d = document.createElement('label');
+            gatesLabel_fox1d.htmlFor = "gatesActivate_fox1d";
+            gatesLabel_fox1d.appendChild(document.createTextNode("Gates"));
+            controls.appendChild(gatesActivate_fox1d);
+            controls.appendChild(gatesLabel_fox1d);
+
+            let glabels_fox1d = ["m", "h", "j", "d", "f", "ca"];
+
+            const gatesDiv_fox1d = document.createElement('div');
+            gatesDiv_fox1d.id = "gatesDiv_fox1d";
+            gatesDiv_fox1d.style.display = "none";
+            controls.appendChild(gatesDiv_fox1d);
+            for (let i = 0; i < glabels_fox1d.length; i++) {
+                const gate = document.createElement('input');
+                gate.type = "checkbox";
+                gate.id = glabels_fox1d[i];
+                gate.checked = i == 0;
+                const gateLabel = document.createElement('label');
+                gateLabel.htmlFor = glabels_fox1d[i];
+                gateLabel.appendChild(document.createTextNode(glabels_fox1d[i]));
+                gatesDiv_fox1d.appendChild(gate);
+                gatesDiv_fox1d.appendChild(gateLabel);
+            }
+
+            let whichGates_fox1d = glabels_fox1d[0];
+
             const voltage_fox1d = document.createElement('canvas');
             voltage_fox1d.id = "voltage";
             voltage_fox1d.width = 800;
             voltage_fox1d.height = 400;
-            // margin of 50px
-            voltage_fox1d.style.margin = "50px";
+            const gates_fox1d = document.createElement('canvas');
+            gates_fox1d.id = "gates_fox1d";
+            gates_fox1d.width = 800;
+            gates_fox1d.height = 400;
 
             plots.appendChild(voltage_fox1d);
 
@@ -331,6 +418,9 @@ model.addEventListener('change', function () {
             setInterval(function () {
                 fox1d.tick();
                 fox1d.draw(voltage_fox1d);
+                if (gatesActivate_fox1d.checked) {
+                    fox1d.draw_gates(gates_fox1d, whichGates_fox1d);
+                }
             }, 0);
 
             // make the canvas interactive
@@ -339,10 +429,32 @@ model.addEventListener('change', function () {
                 
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                const i = Math.floor(x / (voltage_fox1d.width / nx_f1));
-                const j = 100 - Math.floor(y / (voltage_fox1d.height / 200));
+                const i = Math.floor((x - 55) / ((voltage_fox1d.width - 55) / nx_f1));
+                const j = 100 - Math.floor((y - 20) / ((voltage_fox1d.height - 55) / 200));
                 fox1d.set_stimulus(i, j);
             });
+
+            gatesActivate_fox1d.addEventListener('change', function () {
+                if (this.checked) {
+                    fox1d.draw_gates(gates_fox1d, whichGates_fox1d);
+                    gatesDiv_fox1d.style.display = "block";
+                    plots.appendChild(gates_fox1d);
+                } else {
+                    gatesDiv.style.display = "none";
+                    plots.removeChild(gates_fox1d);
+                }
+            });
+
+            for (let i = 0; i < glabels_fox1d.length; i++) {
+                document.getElementById(glabels_fox1d[i]).addEventListener('change', function () {
+                    if (this.checked) {
+                        whichGates_fox1d += this.id;
+                    } else {
+                        whichGates_fox1d = whichGates_fox1d.replace(this.id, "");
+                    }
+                    fox1d.draw_gates(gates_fox1d, whichGates_fox1d);
+                });
+            }
 
             break;
         default:
@@ -350,5 +462,7 @@ model.addEventListener('change', function () {
     }
 });
 
-model.value = "fox1d";
+// model.value = "fox1d";
+model.value = "br1d";
+// model.value = "br0d";
 model.dispatchEvent(new Event('change'));
